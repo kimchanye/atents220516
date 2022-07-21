@@ -12,6 +12,8 @@ public class Enemy : MonoBehaviour, IHealth, IBattle
 
     EnemyState state = EnemyState.Idle;
 
+    public System.Action OnDead;
+
     //Idle 용 --------------------------------------------------------------------------------------
     float waitTime = 3.0f;
     float timeCountDown = 3.0f;
@@ -24,6 +26,7 @@ public class Enemy : MonoBehaviour, IHealth, IBattle
 
     //추적용------------------------------------------------------------------------------------------
     float sightRange = 10.0f;
+    float closeSightRange = 2.5f;
     Vector3 targetPosition = new();
     WaitForSeconds oneSecond = new WaitForSeconds(1.0f);
     IEnumerator repeatChase = null;
@@ -133,7 +136,7 @@ public class Enemy : MonoBehaviour, IHealth, IBattle
 
         if (agent.remainingDistance <= agent.stoppingDistance)  // 도착하면
         {
-            Debug.Log("도착");
+            //Debug.Log("도착");
             index++;                // 다음 인덱스 계산해서
             index %= childCount;    // index = index % childCount;
             
@@ -146,16 +149,21 @@ public class Enemy : MonoBehaviour, IHealth, IBattle
     {
         bool result = false;
         Collider[] colliders = Physics.OverlapSphere(transform.position, sightRange, LayerMask.GetMask("Player"));
-        if(colliders.Length > 0)
+        if(colliders.Length > 0)    // 시야 범위 안에 있는가?
         {
             Vector3 pos = colliders[0].transform.position;
-            if (InSightAngle(pos))
+            if (InSightAngle(pos))  // 시야 각도 안에 있는가?
             {
-                if (!BlockByWall(pos))
+                if (!BlockByWall(pos))  // 벽에 가렸는가?
                 {
                     targetPosition = pos;
                     result = true;
                 }
+            }
+            if(!result && (pos-transform.position).sqrMagnitude < closeSightRange * closeSightRange )
+            {
+                targetPosition = pos;
+                result = true;
             }
         }
 
@@ -183,7 +191,9 @@ public class Enemy : MonoBehaviour, IHealth, IBattle
     void AttackUpdate()
     {
         attackCoolTime -= Time.deltaTime;
-        if( attackCoolTime < 0.0f)
+        transform.rotation = Quaternion.Slerp(transform.rotation,
+                Quaternion.LookRotation(attackTarget.transform.position - transform.position), 0.1f);
+        if ( attackCoolTime < 0.0f)
         {
             anim.SetTrigger("Attack");
             Attack(attackTarget);
@@ -264,13 +274,7 @@ public class Enemy : MonoBehaviour, IHealth, IBattle
                 attackCoolTime = attackSpeed;
                 break;
             case EnemyState.Dead:
-                anim.SetBool("Dead", true);
-                anim.SetTrigger("Die");
-                isDead = true;
-                agent.isStopped = true;
-                agent.velocity = Vector3.zero;
-                HP = 0;
-                StartCoroutine(DeadEffect());
+                DiePresent();
                 break;
             default:
                 break;
@@ -278,6 +282,39 @@ public class Enemy : MonoBehaviour, IHealth, IBattle
 
         state = newState;
         anim.SetInteger("EnemyState", (int)state);
+    }
+
+    void DiePresent()
+    {
+        gameObject.layer = LayerMask.NameToLayer("Default");    // 죽었을 때 락온이 다시 되지 않게 하기 위해 설정
+        OnDead?.Invoke();               // 죽었을 때 실행되는 델리게이트(락온 해제)
+        anim.SetBool("Dead", true);
+        anim.SetTrigger("Die");
+        isDead = true;
+        agent.isStopped = true;
+        agent.velocity = Vector3.zero;
+        HP = 0;
+        ItemDrop();
+        StartCoroutine(DeadEffect());
+    }
+
+    void ItemDrop()
+    {
+        float randomSelect = Random.Range(0.0f, 1.0f);
+        if( randomSelect < 0.1f )
+        {
+            ItemFactory.MakeItem(ItemIDCode.Coin_Gold, transform.position, true);            
+        }
+        else if( randomSelect < 0.3f )
+        {
+            ItemFactory.MakeItem(ItemIDCode.Coin_Silver, transform.position, true);
+        }
+        else
+        {
+            ItemFactory.MakeItem(ItemIDCode.Coin_Copper, transform.position, true);
+        }
+
+
     }
 
     IEnumerator DeadEffect()
@@ -299,7 +336,7 @@ public class Enemy : MonoBehaviour, IHealth, IBattle
         Rigidbody rigid = GetComponent<Rigidbody>();
         rigid.isKinematic = false;
         rigid.drag = 20.0f;
-        
+        Destroy(this.gameObject, 5.0f);
     }
 
     private void OnDrawGizmos()
@@ -315,6 +352,7 @@ public class Enemy : MonoBehaviour, IHealth, IBattle
         {
             Handles.color = Color.red;  // 추적이나 공격 중일 때만 빨간색
         }
+        Handles.DrawWireDisc(transform.position, transform.up, closeSightRange); // 근접 시야 범위
 
         Vector3 forward = transform.forward * sightRange;
         Quaternion q1 = Quaternion.Euler(0.5f * sightAngle * transform.up);

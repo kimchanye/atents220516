@@ -10,3 +10,15 @@ public enum EnemyState
     Attack,
     Dead
 }
+
+/// <summary>
+/// 아이템 종류별 ID
+/// </summary>
+public enum ItemIDCode
+{
+    Coin_Copper = 0,
+    Coin_Silver,
+    Coin_Gold,
+    Egg,
+    Bone
+}
