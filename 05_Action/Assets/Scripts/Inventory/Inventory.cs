@@ -285,6 +285,35 @@ public class Inventory
     }
 
     // 아이템 나누기
+    public void TempRemoveItem(uint from, uint count = 1)
+    {
+        if( IsValidAndNotEmptySlot(from) )
+        {
+            ItemSlot slot = slots[from];
+            tempSlot.AssignSlotItem(slot.SlotItemData, count);
+            slot.DecreaseSlotItem(count);
+        }
+    }
+
+    public void TempToSlot(uint to)
+    {
+        if (!tempSlot.IsEmpty())
+        {
+            ItemSlot slot = slots[to];
+
+            if (slot.IsEmpty())
+            {
+                slot.AssignSlotItem(tempSlot.SlotItemData, tempSlot.ItemCount);
+                tempSlot.ClearSlotItem();
+            }
+            else if (slot.SlotItemData == tempSlot.SlotItemData)
+            {
+                uint over = slot.IncreaseSlotItem(tempSlot.ItemCount);
+                tempSlot.DecreaseSlotItem(tempSlot.ItemCount - over);
+            }
+        }
+    }
+
     // 아이템 사용하기
     // 아이템 장비하기
     // 아이템 정렬
