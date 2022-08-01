@@ -205,6 +205,7 @@ public class ItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
                     detailUI.IsPause = false;   // 상세정보창 일시정지 풀기
                 }
             }
+            invenUI.Test_PrintInventory();
         }
     }
 }

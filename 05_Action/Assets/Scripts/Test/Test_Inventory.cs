@@ -28,10 +28,10 @@ public class Test_Inventory : MonoBehaviour
         //inven.AddItem(ItemIDCode.ManaPotion, 4);
         //inven.AddItem(ItemIDCode.ManaPotion, 4);
 
-        inven.TempRemoveItem(1, 4);
-        inven.TempToSlot(5);
-        inven.TempToSlot(4);
-        inven.TempToSlot(3);
+        //inven.TempRemoveItem(1, 4);
+        //inven.TempToSlot(5);
+        //inven.TempToSlot(4);
+        //inven.TempToSlot(3);
 
     }
 
