@@ -291,9 +291,8 @@ public class InventoryUI : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndD
                     if (slotUI != null)
                     {
                         // ItemSlotUI 컴포넌트가 있으면 Inventory.MoveItem() 실행시키기
-                        //Debug.Log($"End SlotID : {slotUI.ID}");
-                        //inven.MoveItem(dragStartID, slotUI.ID);         // 아이템 실제로 옮기기
-                        inven.TempToSlot(slotUI.ID);
+                        //Debug.Log($"End SlotID : {slotUI.ID}");      
+                        inven.TempToSlot(slotUI.ID);                    // 아이템 실제로 옮기기
                         inven.TempToSlot(dragStartID);
                         detail.IsPause = false;                         // 상세정보창 다시 열릴 수 있게 하기
                         detail.Open(slotUI.ItemSlot.SlotItemData);      // 상세정보창 열기

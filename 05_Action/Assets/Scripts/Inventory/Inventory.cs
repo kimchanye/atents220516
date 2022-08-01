@@ -301,35 +301,22 @@ public class Inventory
     {
         if (!tempSlot.IsEmpty())
         {
-            ItemSlot slot = slots[to];
+            ItemSlot toSlot = slots[to];
 
-            //if (slot.IsEmpty())
-            //{
-            //    slot.AssignSlotItem(tempSlot.SlotItemData, tempSlot.ItemCount);
-            //    tempSlot.ClearSlotItem();
-            //}
-            //else if (slot.SlotItemData == tempSlot.SlotItemData)
-            //{
-            //    uint over = slot.IncreaseSlotItem(tempSlot.ItemCount);
-            //    tempSlot.DecreaseSlotItem(tempSlot.ItemCount - over);
-            //}
-
-
-            if (tempSlot.SlotItemData == slot.SlotItemData
-               && slot.ItemCount < slot.SlotItemData.maxStackCount)
+            if (tempSlot.SlotItemData == toSlot.SlotItemData)
             {
-                // 같은 종류의 아이템이면서 목적지에 아이템을 추가할 여유가 있을 때
-                uint overCount = slot.IncreaseSlotItem(tempSlot.ItemCount); // from에 있는 아이템을 전부 to에 넣기 시도
+                // 같은 종류의 아이템이다.
+                uint overCount = toSlot.IncreaseSlotItem(tempSlot.ItemCount); // from에 있는 아이템을 전부 to에 넣기 시도
                 tempSlot.DecreaseSlotItem(tempSlot.ItemCount - overCount);    // to에 들어간 만큼만 from에서 제거                
             }
             else
             {
-                // 다른 종류의 아이템( 또는 to에 최대치보다 많은 종류의 아이템이 들어있다.)이다.
+                // 다른 종류의 아이템이다. 
                 //Debug.Log($"{from}에 있는 {slots[from].SlotItemData.itemName}이 {to}로 이동합니다.");
 
-                ItemData tempItemData = slot.SlotItemData;
-                uint tempItemCount = slot.ItemCount;
-                slot.AssignSlotItem(tempSlot.SlotItemData, tempSlot.ItemCount);
+                ItemData tempItemData = toSlot.SlotItemData;
+                uint tempItemCount = toSlot.ItemCount;
+                toSlot.AssignSlotItem(tempSlot.SlotItemData, tempSlot.ItemCount);
                 tempSlot.AssignSlotItem(tempItemData, tempItemCount);
             }
         }

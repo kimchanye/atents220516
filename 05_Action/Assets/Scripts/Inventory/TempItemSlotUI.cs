@@ -27,10 +27,8 @@ public class TempItemSlotUI : ItemSlotUI
     /// <summary>
     /// 임시 슬롯을 보이도록 열기
     /// </summary>
-    /// <param name="itemSlot">임시 슬롯에 할당할 아이템이 들어있는 슬롯</param>
     public void Open()
     {
-        //SetTempSlot(itemSlot);  // 슬롯 설정
         if (ItemSlot.SlotItemData != null)
         {
             transform.position = Mouse.current.position.ReadValue();    // 보이기 전에 위치 조정
