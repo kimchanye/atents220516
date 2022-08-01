@@ -11,8 +11,11 @@ public class ItemSpliterUI : MonoBehaviour
 {
     uint itemSplitCount = 1;
     ItemSlotUI targetSlotUI;
+    InventoryUI invenUI;
 
     TMP_InputField inputField;
+
+    public Action<uint, uint> OnOKClick;
 
     uint ItemSplitCount
     {
@@ -45,6 +48,8 @@ public class ItemSpliterUI : MonoBehaviour
         Button cancel = transform.Find("Cancel_Button").GetComponent<Button>();
         cancel.onClick.AddListener(OnCancelClick);
 
+        invenUI = GameManager.Inst.InvenUI;
+
         Close();
     }
 
@@ -75,9 +80,13 @@ public class ItemSpliterUI : MonoBehaviour
     private void OnOK()
     {
         Debug.Log("OnOK");
-        targetSlotUI.ItemSlot.DecreaseSlotItem(ItemSplitCount);
-        ItemSlot tempSlot = new(targetSlotUI.ItemSlot.SlotItemData, ItemSplitCount);
-        tempSlot.onSlotItemChage = GameManager.Inst.InvenUI.TempSlotUI.Refresh;
+        //targetSlotUI.ItemSlot.DecreaseSlotItem(ItemSplitCount);
+        //ItemSlot tempSlot = new(targetSlotUI.ItemSlot.SlotItemData, ItemSplitCount);
+        //tempSlot.onSlotItemChage = GameManager.Inst.InvenUI.TempSlotUI.Refresh;
+
+
+        OnOKClick?.Invoke(targetSlotUI.ID, ItemSplitCount);
+
         //GameManager.Inst.InvenUI.TempSlotUI.Open(tempSlot);
         Close();
     }

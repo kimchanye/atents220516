@@ -94,8 +94,7 @@ public class InventoryUI : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndD
         tempItemSlotUI = GetComponentInChildren<TempItemSlotUI>();
         detail = GetComponentInChildren<DetailInfoUI>();
         itemSpliterUI = GetComponentInChildren<ItemSpliterUI>();
-        itemSpliterUI.Initialize();
-
+        
         Button closeButton = transform.Find("CloseButton").GetComponent<Button>();
         closeButton.onClick.AddListener(Close);
     }
@@ -150,6 +149,10 @@ public class InventoryUI : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndD
 
         tempItemSlotUI.Initialize(uint.MaxValue, inven.TempSlot);
         tempItemSlotUI.Close(); // 닫은체로 시작하기
+
+        itemSpliterUI.Initialize();
+        itemSpliterUI.OnOKClick += OnSpliterOK;
+
         RefreshAllSlots();  // 전체 슬롯UI 갱신
     }
 
@@ -213,6 +216,13 @@ public class InventoryUI : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndD
     public void Test_PrintInventory()
     {
         inven.PrintInventory();
+    }
+
+    // 델리게이트용 함수들 -------------------------------------------------------------------------
+    private void OnSpliterOK(uint slotID, uint count)
+    {
+        inven.TempRemoveItem(slotID, count);
+        tempItemSlotUI.Open();
     }
 
     // 이벤트 시스템의 인터페이스 함수들 -------------------------------------------------------------
@@ -284,6 +294,7 @@ public class InventoryUI : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndD
                         //Debug.Log($"End SlotID : {slotUI.ID}");
                         //inven.MoveItem(dragStartID, slotUI.ID);         // 아이템 실제로 옮기기
                         inven.TempToSlot(slotUI.ID);
+                        inven.TempToSlot(dragStartID);
                         detail.IsPause = false;                         // 상세정보창 다시 열릴 수 있게 하기
                         detail.Open(slotUI.ItemSlot.SlotItemData);      // 상세정보창 열기
                         dragStartID = InvalideID;                       // 드래그 시작 id를 될 수 없는 값으로 설정(드래그가 끝났음을 표시)
