@@ -14,7 +14,7 @@ public class ItemSpliterUI : MonoBehaviour
 
     TMP_InputField inputField;
 
-    public Action<uint, uint> OnOKClick;
+    public Action<uint,uint> OnOkClick;
 
     uint ItemSplitCount
     {
@@ -56,6 +56,7 @@ public class ItemSpliterUI : MonoBehaviour
         {
             targetSlotUI = target;
             ItemSplitCount = 1;
+            transform.position = target.transform.position; // 아이템을 나눌 슬롯의 위치로 스플리터UI 옮기기
             gameObject.SetActive(true);
         }
     }
@@ -77,7 +78,9 @@ public class ItemSpliterUI : MonoBehaviour
     private void OnOK()
     {
         Debug.Log("OnOK");
-        OnOKClick?.Invoke(targetSlotUI.ID, ItemSplitCount);
+
+        OnOkClick?.Invoke(targetSlotUI.ID, ItemSplitCount);
+
         Close();
     }
 
