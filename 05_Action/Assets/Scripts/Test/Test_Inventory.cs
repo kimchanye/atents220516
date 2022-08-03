@@ -7,23 +7,76 @@ public class Test_Inventory : MonoBehaviour
     private void Start()
     {
         //Test_AddRemoveMove();
+        //Test_Stack();
 
+        Inventory inven = new Inventory();
+        InventoryUI invenUI = FindObjectOfType<InventoryUI>();
+        invenUI.InitializeInventory(inven);
+        invenUI.InventoryOnOffSwitch();
+        inven.AddItem(ItemIDCode.HealingPotion);
+        inven.AddItem(ItemIDCode.HealingPotion);
+        inven.AddItem(ItemIDCode.HealingPotion);
+        inven.AddItem(ItemIDCode.ManaPotion);
+        inven.AddItem(ItemIDCode.ManaPotion);
+        inven.AddItem(ItemIDCode.ManaPotion);
+        inven.AddItem(ItemIDCode.ManaPotion);
+        inven.AddItem(ItemIDCode.ManaPotion);
+        inven.AddItem(ItemIDCode.ManaPotion,5);
+        inven.AddItem(ItemIDCode.ManaPotion,5);
+        inven.AddItem(ItemIDCode.ManaPotion,5);
+        //inven.AddItem(ItemIDCode.ManaPotion, 4);
+        //inven.AddItem(ItemIDCode.ManaPotion, 4);
+        //inven.AddItem(ItemIDCode.ManaPotion, 4);
+        //inven.TempRemoveItem(1, 3);
+        //inven.TempToSlot(5);
+
+        //inven.TempRemoveItem(1, 4);
+        //inven.TempToSlot(5);
+        //inven.TempToSlot(4);
+        //inven.TempToSlot(3);
+
+    }
+
+    private static void Test_Stack()
+    {
         Inventory inven = new Inventory();
         inven.AddItem(ItemIDCode.Egg);
         inven.AddItem(ItemIDCode.Bone);
 
         InventoryUI invenUI = FindObjectOfType<InventoryUI>();
         invenUI.InitializeInventory(inven);
+        invenUI.InventoryOnOffSwitch();
 
-        inven.RemoveItem(0);
-        inven.AddItem(ItemIDCode.Egg);
-        inven.AddItem(ItemIDCode.Egg);
+        //inven.RemoveItem(0);
+        //inven.AddItem(ItemIDCode.Egg);
+        //inven.AddItem(ItemIDCode.Egg);
 
-
-
-        //int i = 0;
+        inven.AddItem(ItemIDCode.HealingPotion);
+        inven.AddItem(ItemIDCode.HealingPotion);
+        inven.AddItem(ItemIDCode.HealingPotion);
+        inven.AddItem(ItemIDCode.HealingPotion);
+        inven.PrintInventory(); //[달걀(1),뼈다귀(1),힐링포션(3),힐링포션(1),(빈칸),(빈칸)]
+        inven.AddItem(ItemIDCode.ManaPotion);
+        inven.AddItem(ItemIDCode.ManaPotion, 5);
+        inven.PrintInventory();
+        inven.AddItem(ItemIDCode.ManaPotion, 5);
+        inven.AddItem(ItemIDCode.ManaPotion, 5);
+        inven.AddItem(ItemIDCode.ManaPotion, 5);
+        inven.AddItem(ItemIDCode.ManaPotion, 5);
+        inven.AddItem(ItemIDCode.ManaPotion, 5);
+        inven.AddItem(ItemIDCode.ManaPotion);
+        inven.PrintInventory(); //[달걀(1),뼈다귀(1),힐링포션(3),힐링포션(1),마나포션(2),마나포션(5)]
+        inven.RemoveItem(5, 4);
+        inven.RemoveItem(5);
+        inven.ClearItem(4);
+        inven.PrintInventory(); //[달걀(1),뼈다귀(1),힐링포션(3),힐링포션(1),(빈칸),(빈칸)]
+        inven.AddItem(ItemIDCode.HealingPotion, 5);
+        inven.AddItem(ItemIDCode.HealingPotion, 5);
     }
 
+
+
+    // 1칸에 1개 테스트
     private static void Test_AddRemoveMove()
     {
         Inventory inven = new();
