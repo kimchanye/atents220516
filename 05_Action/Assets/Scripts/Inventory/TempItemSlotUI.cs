@@ -26,6 +26,7 @@ public class TempItemSlotUI : ItemSlotUI
     {
         itemImage = GetComponent<Image>();  // 이미지 찾아오기
         countText = GetComponentInChildren<TextMeshProUGUI>();
+        
     }
 
     private void Update()
