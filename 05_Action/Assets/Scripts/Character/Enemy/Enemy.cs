@@ -2,7 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
 
 public class Enemy : MonoBehaviour, IHealth, IBattle
 {
@@ -300,8 +303,13 @@ public class Enemy : MonoBehaviour, IHealth, IBattle
 
     void ItemDrop()
     {
-        float randomSelect = Random.Range(0.0f, 1.0f);
-        if( randomSelect < 0.1f )
+        float randomSelect = Random.Range(0.0f, 1.0f);        
+        
+        if( randomSelect < 0.001f)
+        {
+            ItemFactory.MakeItem(ItemIDCode.OneHandSword2);
+        }
+        else if( randomSelect < 0.1f )
         {
             ItemFactory.MakeItem(ItemIDCode.Coin_Gold, transform.position, true);            
         }
@@ -309,12 +317,18 @@ public class Enemy : MonoBehaviour, IHealth, IBattle
         {
             ItemFactory.MakeItem(ItemIDCode.Coin_Silver, transform.position, true);
         }
+        else if (randomSelect < 0.4f)
+        {
+            ItemFactory.MakeItem(ItemIDCode.HealingPotion, transform.position, true);
+        }
+        else if (randomSelect < 0.5f)
+        {
+            ItemFactory.MakeItem(ItemIDCode.ManaPotion, transform.position, true);
+        }
         else
         {
             ItemFactory.MakeItem(ItemIDCode.Coin_Copper, transform.position, true);
         }
-
-
     }
 
     IEnumerator DeadEffect()
@@ -339,6 +353,7 @@ public class Enemy : MonoBehaviour, IHealth, IBattle
         Destroy(this.gameObject, 5.0f);
     }
 
+#if UNITY_EDITOR
     private void OnDrawGizmos()
     {
         //Gizmos.color = Color.blue;
@@ -362,6 +377,7 @@ public class Enemy : MonoBehaviour, IHealth, IBattle
 
         Handles.DrawWireArc(transform.position, transform.up, q2 * transform.forward, sightAngle, sightRange, 5.0f);// 전체 시야범위
     }
+#endif
 
     /// <summary>
     /// 플레이어가 시야각도(sightAngle) 안에 있으면 true를 리턴

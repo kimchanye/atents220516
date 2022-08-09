@@ -10,6 +10,9 @@ public class ItemSlot
     // 아이템 갯수(int)
     uint itemCount = 0;
 
+    // 아이템 장비여부
+    bool itemEquiped = false;
+
     // 프로퍼티 ------------------------------------------------------------------------------------
 
     /// <summary>
@@ -20,10 +23,10 @@ public class ItemSlot
         get => slotItemData;
         private set
         {
-            if( slotItemData != value )
+            if (slotItemData != value)
             {
                 slotItemData = value;
-                onSlotItemChage?.Invoke();  // 변경이 일어나면 델리게이트 실행(주로 화면 갱신용)
+                onSlotItemChange?.Invoke();  // 변경이 일어나면 델리게이트 실행(주로 화면 갱신용)
             }
         }
     }
@@ -37,7 +40,17 @@ public class ItemSlot
         private set
         {
             itemCount = value;
-            onSlotItemChage?.Invoke();  // 변경이 일어나면 델리게이트 실행(주로 화면 갱신용)
+            onSlotItemChange?.Invoke();  // 변경이 일어나면 델리게이트 실행(주로 화면 갱신용)
+        }
+    }
+
+    public bool ItemEquiped
+    {
+        get => itemEquiped;
+        set
+        {
+            itemEquiped = value;
+            onSlotItemChange?.Invoke();
         }
     }
 
@@ -45,7 +58,7 @@ public class ItemSlot
     /// <summary>
     /// 슬롯에 들어있는 아이템의 종류나 갯수가 변경될 때 실행되는 델리게이트
     /// </summary>
-    public System.Action onSlotItemChage;
+    public System.Action onSlotItemChange;
 
     // 함수 ---------------------------------------------------------------------------------------
 
@@ -123,10 +136,68 @@ public class ItemSlot
     {
         SlotItemData = null;
         ItemCount = 0;
+        ItemEquiped = false;
     }
 
-    // 아이템을 사용하는 함수
-    // 아이템을 장비하는 함수
+    /// <summary>
+    /// 아이템을 사용하는 함수
+    /// </summary>
+    /// <param name="target">아이템의 효과를 받을 대상(보통 플레이어)</param>
+    public void UseSlotItem(GameObject target = null)
+    {
+        IUsable usable = SlotItemData as IUsable;   // 이 아이템이 사용가능한 아이템인지 확인
+        if (usable != null)
+        {
+            // 아이템이 사용가능하면
+            usable.Use(target); // 아이템 사용하고
+            DecreaseSlotItem(); // 갯수 하나 감소
+        }
+    }
+
+    /// <summary>
+    /// 아이템을 장비하는 함수
+    /// </summary>
+    /// <param name="target">아이템을 장비하는 대상</param>
+    public bool EquipSlotItem(GameObject target = null)
+    {
+        bool result = false;
+        IEquipItem equipItem = SlotItemData as IEquipItem;  // 이 슬롯의 아이템이 장비 가능한 아이템인지 확인
+        if(equipItem != null)
+        {
+            // 아이템은 장비가능하다.
+
+            ItemData_Weapon weaponData = SlotItemData as ItemData_Weapon;   // 아이템 데이터 따로 보관
+            IEquipTarget equipTarget = target.GetComponent<IEquipTarget>(); // 아이템을 장비할 대상이 아이템을 장비할 수 있는지 확인
+            if (equipTarget != null)
+            {
+                // 대상은 특정 슬롯의 아이템을 장비하고 있다. 그리고 아이템이 장비되어 있다.
+                if (equipTarget.EquipItemSlot != null )    // 무기를 장비하고 잇는지 확인
+                {
+                    // 무기를 장비하고 있다.
+
+                    if (equipTarget.EquipItemSlot != this)      // 장비하고 있는 아이템의 슬롯을 클릭했는지 확인
+                    {
+                        // 다른 슬롯을 장비하고 있다.
+                        equipTarget.UnEquipWeapon();            // 일단 무기를 벗는다.
+                        equipTarget.EquipWeapon(this);    // 다른 무기를 장비한다.
+                        result = true;
+                    }
+                    else
+                    {
+                        equipTarget.UnEquipWeapon();            // 같은 무기를 장비한 상황이면 벗기만 한다.
+                    }
+                }
+                else
+                {
+                    // 무기를 장비하고 있지 않다. => 그냥 장비
+                    equipTarget.EquipWeapon(this);
+                    result = true;
+                }
+            }
+        }
+        return result;
+    }
+
 
     // 함수(백엔드) --------------------------------------------------------------------------------
 

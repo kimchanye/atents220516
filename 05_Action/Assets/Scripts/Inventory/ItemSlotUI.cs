@@ -43,6 +43,11 @@ public class ItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
     /// </summary>
     protected TextMeshProUGUI countText;
 
+    /// <summary>
+    /// 아이템의 장비 여부를 표시할 Text 컴포넌트
+    /// </summary>
+    protected TextMeshProUGUI equipMark;
+
 
 
     // 프로퍼티들 ----------------------------------------------------------------------------------
@@ -61,7 +66,9 @@ public class ItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
     protected virtual void Awake()  // 오버라이드 가능하도록 virtual 추가
     {
         itemImage = transform.GetChild(0).GetComponent<Image>();    // 아이템 표시용 이미지 컴포넌트 찾아놓기
-        countText = GetComponentInChildren<TextMeshProUGUI>();
+        countText = transform.GetChild(1).GetComponent<TextMeshProUGUI>();
+        equipMark = transform.GetChild(2).GetComponent<TextMeshProUGUI>();
+        equipMark.gameObject.SetActive(false);
     }
 
     /// <summary>
@@ -76,7 +83,7 @@ public class ItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
 
         id = newID;
         itemSlot = targetSlot;
-        itemSlot.onSlotItemChage = Refresh; // ItemSlot에 아이템이 변경될 경우 실행될 델리게이트에 함수 등록        
+        itemSlot.onSlotItemChange = Refresh; // ItemSlot에 아이템이 변경될 경우 실행될 델리게이트에 함수 등록        
     }
 
     /// <summary>
@@ -90,6 +97,10 @@ public class ItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
             itemImage.sprite = itemSlot.SlotItemData.itemIcon;  // 아이콘 이미지 설정하고
             itemImage.color = Color.white;  // 불투명하게 만들기
             countText.text = itemSlot.ItemCount.ToString();
+
+            // equipMark는 장비아이템이 장비중인 상황일때만 보여지기
+            equipMark.gameObject.SetActive((itemSlot.SlotItemData is ItemData_Weapon) && itemSlot.ItemEquiped);
+            
         }
         else
         {
@@ -97,6 +108,7 @@ public class ItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
             itemImage.sprite = null;        // 아이콘 이미지 제거하고
             itemImage.color = Color.clear;  // 투명하게 만들기
             countText.text = "";
+            equipMark.gameObject.SetActive(false);
         }
     }
 
@@ -164,15 +176,17 @@ public class ItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
             }
             else
             {
-                // 분할된 아이템을 슬롯에 넣기                
                 if (!temp.IsEmpty())  // temp에 ItemSlot이 들어있다 => 아이템을 덜어낸 상황이다.                
                 {
+                    bool isEquipItem = temp.ItemSlot.ItemEquiped;
+                    // 들고 있던 임시 아이템을 슬롯에 넣기                
                     if (ItemSlot.IsEmpty())
                     {
                         // 클릭한 슬롯이 빈칸이다.
 
                         // temp에 있는 내용을 이 슬롯에 다 넣기
                         itemSlot.AssignSlotItem(temp.ItemSlot.SlotItemData, temp.ItemSlot.ItemCount);
+                        (temp.ItemSlot.ItemEquiped, itemSlot.ItemEquiped) = (itemSlot.ItemEquiped, temp.ItemSlot.ItemEquiped);
                         temp.Close();   // temp칸 비우기
                     }
                     else if (temp.ItemSlot.SlotItemData == ItemSlot.SlotItemData)
@@ -187,11 +201,12 @@ public class ItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
 
                         ItemSlot.IncreaseSlotItem(small);
                         temp.ItemSlot.DecreaseSlotItem(small);
+                        (temp.ItemSlot.ItemEquiped, itemSlot.ItemEquiped) = (itemSlot.ItemEquiped, temp.ItemSlot.ItemEquiped);
 
                         if (temp.ItemSlot.ItemCount < 1)    // 임시 슬롯에 있던 것을 전부 넣었을 때만 닫아라
                         {
                             temp.Close();
-                        }
+                        }                        
                     }
                     else
                     {
@@ -200,6 +215,13 @@ public class ItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
                         uint tempCount = temp.ItemSlot.ItemCount;
                         temp.ItemSlot.AssignSlotItem(itemSlot.SlotItemData, itemSlot.ItemCount);
                         itemSlot.AssignSlotItem(tempData, tempCount);
+                        (temp.ItemSlot.ItemEquiped, itemSlot.ItemEquiped) = (itemSlot.ItemEquiped, temp.ItemSlot.ItemEquiped);
+                    }  
+
+                    if(isEquipItem) // 장비중인 아이템을 옮기는 상황이면 일단 해제하고 다시 장비
+                    {
+                        GameManager.Inst.MainPlayer.UnEquipWeapon();    
+                        GameManager.Inst.MainPlayer.EquipWeapon(ItemSlot);
                     }
 
                     detailUI.IsPause = false;   // 상세정보창 일시정지 풀기
@@ -207,17 +229,30 @@ public class ItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
                 else
                 {
                     // 그냥 클릭한 상황
-                    if( !itemSlot.IsEmpty() )
+                    if( !ItemSlot.IsEmpty() )
                     {
-                        IUsable usable = itemSlot.SlotItemData as IUsable;
-                        if(usable != null)
+                        // 아이템 사용 시도
+                        ItemSlot.UseSlotItem(GameManager.Inst.MainPlayer.gameObject);
+                        if (ItemSlot.IsEmpty())
                         {
-                            usable.Use(GameManager.Inst.MainPlayer.gameObject);
-                            ItemSlot.DecreaseSlotItem();
+                            invenUI.Detail.Close();
                         }
+
+                        // 아이템 장비 시도
+                        bool isEquiped = ItemSlot.EquipSlotItem(GameManager.Inst.MainPlayer.gameObject);
+                        if (isEquiped)
+                        {
+                            invenUI.ClearAllEquipMark();
+                        }
+                        ItemSlot.ItemEquiped = isEquiped;
                     }
                 }
             }
         }
+    }
+
+    public void ClearEquipMark()
+    {
+        equipMark.gameObject.SetActive(false);
     }
 }

@@ -299,10 +299,11 @@ public class Inventory
             {
                 // 다른 종류의 아이템이다. => 아이템과 아이템 갯수를 서로 스왑한다.
                 ItemData tempItemData = toSlot.SlotItemData;    // 임시 저장
-                uint tempItemCount = toSlot.ItemCount;
+                uint tempItemCount = toSlot.ItemCount;                
                 toSlot.AssignSlotItem(fromSlot.SlotItemData, fromSlot.ItemCount);   // to에다 from의 정보 넣기
-                fromSlot.AssignSlotItem(tempItemData, tempItemCount);               // from에다가 임시로 저장한 to의 정보 넣기
+                fromSlot.AssignSlotItem(tempItemData, tempItemCount);               // from에다가 임시로 저장한 to의 정보 넣기                                
             }
+            (toSlot.ItemEquiped, fromSlot.ItemEquiped) = (fromSlot.ItemEquiped, toSlot.ItemEquiped);
         }        
     }
 
@@ -311,13 +312,14 @@ public class Inventory
     /// </summary>
     /// <param name="from">아이템을 나눌 슬롯</param>
     /// <param name="count">나는 아이템 갯수</param>
-    public void TempRemoveItem(uint from, uint count = 1)
+    public void TempRemoveItem(uint from, uint count = 1, bool equiped = false)
     {
         if( IsValidAndNotEmptySlot(from) )  // from이 절절한 슬롯이면
         {
             ItemSlot slot = slots[from];
             tempSlot.AssignSlotItem(slot.SlotItemData, count);  // temp 슬롯에 지정된 갯수의 아이템 할당
-            slot.DecreaseSlotItem(count);   // from 슬롯에서 해당 갯수만큼 감소
+            slot.DecreaseSlotItem(count);   // from 슬롯에서 해당 갯수만큼 감소            
+            tempSlot.ItemEquiped = equiped;
         }
     }
 
